@@ -10,7 +10,7 @@ This project containing performance issues I encountered in projects.
     source ./init.sh
     ```
 
-## Table of Content
+## Project Directory
 
 ``` text
 /python-performance

@@ -1,15 +1,19 @@
+import os
 import json
 from operator import itemgetter
 from itertools import groupby
 
 
-f = open('device_clients.json')
+# Change working directory to the directory of the script
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+f = open("./device_clients.json")
 
 device_clients = json.load(f)
 
 f.close()
 
-f = open('keep_clients.json')
+f = open("./keep_clients.json")
 
 keep_clients = json.load(f)
 
@@ -25,6 +29,7 @@ def traverse_device(child_dict, device_id):
         return device_id
 
 
+# find_last_device before tuned
 def find_last_device(client_belong_devices: []) -> str | None:
     print("visited")
     all_client_macs = set()
@@ -60,7 +65,9 @@ def merge_indirect_clients(
     cache_client_positon: dict = {}
 
     for client_mac, tmp_clients in groupby(keep_clients, key=itemgetter("mac_address")):
-        client_belong_devices = [device for device in device_clients if client_mac in device["client_macs"]]
+        client_belong_devices = [
+            device for device in device_clients if client_mac in device["client_macs"]
+        ]
         client_device_ids = [client["device_id"] for client in client_belong_devices]
         client_device_ids.sort()
         client_position_str = "_".join(client_device_ids)
@@ -76,15 +83,19 @@ def merge_indirect_clients(
                 (
                     client
                     for client in tmp_clients
-                    if client["connected_device_id"] == device_id and client["mac_address"] == client_mac
+                    if client["connected_device_id"] == device_id
+                    and client["mac_address"] == client_mac
                 ),
                 None,
             )
             cache_client_positon[client_position_str] = device_id
         if not last_client:
             continue
-        if (client_mac not in merged_clients) or merged_clients[client_mac]["last_seen"] < last_client["last_seen"]:
+        if (client_mac not in merged_clients) or merged_clients[client_mac][
+            "last_seen"
+        ] < last_client["last_seen"]:
             merged_clients[client_mac] = last_client
+
 
 merged_clients = {}
 
