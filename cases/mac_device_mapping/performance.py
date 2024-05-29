@@ -3,7 +3,6 @@ import json
 from operator import itemgetter
 from itertools import groupby
 
-
 # Change working directory to the directory of the script
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -20,6 +19,11 @@ keep_clients = json.load(f)
 f.close()
 
 
+def export(file_name: str, data: any) -> None:
+    with open(file_name, mode="w", encoding="utf-8") as file:
+        json.dump(data, file, indent=4)
+
+
 def traverse_device(child_dict, device_id):
     if device_id not in child_dict:
         return device_id
@@ -30,13 +34,40 @@ def traverse_device(child_dict, device_id):
 
 
 # find_last_device before tuned
+# def find_last_device(client_belong_devices: []) -> str | None:
+#     all_client_macs = set()
+#     site_device_macs: dict[str, list[str]] = {}
+#     for tmp_client in client_belong_devices:
+#         all_client_macs.update(tmp_client["client_macs"])
+#         site_device_macs[tmp_client["device_id"]] = tmp_client["mac_pool"]
+
+#     child_dict: dict[str, list[str]] = {}
+#     root = client_belong_devices[0]
+#     for client in client_belong_devices:
+#         if not set(client["mac_pool"]).intersection(all_client_macs):
+#             root = client
+
+#         child_device_ids: set[str] = set()
+#         for device_id, device_mac_pool in site_device_macs.items():
+#             if set(client["client_macs"]).intersection(set(device_mac_pool)) and device_id != client["device_id"]:
+#                 if device_id in child_dict:
+#                     return None
+#                 child_device_ids.add(device_id)
+
+#         if child_device_ids:
+#             child_dict.setdefault(client["device_id"], []).extend(child_device_ids)
+
+#     return traverse_device(child_dict, root["device_id"])
+
+
 def find_last_device(client_belong_devices: []) -> str | None:
-    print("visited")
     all_client_macs = set()
     site_device_macs: dict[str, list[str]] = {}
+    device_client_macs_set : dict[str, set[str]] = {}
     for tmp_client in client_belong_devices:
         all_client_macs.update(tmp_client["client_macs"])
         site_device_macs[tmp_client["device_id"]] = tmp_client["mac_pool"]
+        device_client_macs_set[tmp_client["device_id"]] = set(tmp_client["client_macs"])
 
     child_dict: dict[str, list[str]] = {}
     root = client_belong_devices[0]
@@ -46,7 +77,8 @@ def find_last_device(client_belong_devices: []) -> str | None:
 
         child_device_ids: set[str] = set()
         for device_id, device_mac_pool in site_device_macs.items():
-            if set(client["client_macs"]).intersection(set(device_mac_pool)) and device_id != client["device_id"]:
+            client_macs = device_client_macs_set[device_id]
+            if device_id != client["device_id"] and client_macs.intersection(set(device_mac_pool)):
                 if device_id in child_dict:
                     return None
                 child_device_ids.add(device_id)
@@ -101,4 +133,4 @@ merged_clients = {}
 
 merge_indirect_clients(device_clients, merged_clients, keep_clients)
 
-print(json.dumps(merged_clients))
+#export(file_name="merge_clients.json", data=merged_clients)
