@@ -97,9 +97,7 @@ def find_last_device_1(
         if site_device_macs[client_device["device_id"]].isdisjoint(all_client_macs):
             root = client_device
 
-        client_macs_set = client_and_mac_pool_dict[client_device["device_id"]][
-            "client_macs"
-        ]
+        client_macs_set = client_and_mac_pool_dict[client_device["device_id"]]["client_macs"]
         child_device_ids: set[str] = set()
         for another_device_id, another_device_mac_pool in site_device_macs.items():
             if another_device_id != client_device[
@@ -169,16 +167,6 @@ def merge_indirect_clients_1(
             merged_clients[client_mac] = last_client
 
 
-def test_find_last_device():
-    client_mac = "EE:67:DB:5F:D3:75"
-
-    client_belong_devices = [
-        device for device in device_clients if client_mac in device["client_macs"]
-    ]
-
-    find_last_device(client_belong_devices=client_belong_devices)
-
-
 def merge_indirect_clients(
     device_clients: [],
     merged_clients: dict[str, dict],
@@ -233,4 +221,3 @@ print("=========DURATION=========")
 print(end - start)
 
 export(file_name="merge_clients_1.json", data=merged_clients)
-# test_find_last_device()
